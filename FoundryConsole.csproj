@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <configuration>
+      <packageSources>
+        <add key="foundry-local" value="Z:\repos\Github\Foundry-Local\sdk\cs\src\bin\Debug" />
+      </packageSources>
+    </configuration>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AI.Foundry.Local" Version="0.1.0-preview" />
+    <PackageReference Include="Microsoft.SemanticKernel" Version="1.54.0" />
+  </ItemGroup>
+</Project>
