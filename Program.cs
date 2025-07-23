@@ -10,13 +10,14 @@ internal class Program
     static async Task Main(string[] args)
     {
         // Foundry Local Initializations
-        var modelAlias = "phi-4";
+        var modelAlias = "phi-4-mini";
+
         // Note: If the model isn't already on-box, it will download and may take a few minutes for this step.
         var manager = await FoundryLocalManager.StartModelAsync(aliasOrModelId: modelAlias);
-        var model = await manager.GetModelInfoAsync(aliasorModelId: modelAlias);
+        var model = await manager.GetModelInfoAsync(aliasOrModelId: modelAlias);
 
         // "Negative Space" programming
-        if(manager == null || model == null)
+        if (manager == null || model == null)
         {
             throw new ArgumentNullException("Trouble initializing model");
         }
@@ -35,13 +36,35 @@ internal class Program
         );
 
         var kernel = builder.Build();
+        Console.WriteLine("------------------------------");
+        Console.WriteLine("FoundryKernelConsole");
+        Console.WriteLine("------------------------------");
+        Console.WriteLine();
+        Console.WriteLine("You are now chatting with an LLM.\n");
 
-        var result = kernel.InvokePromptStreamingAsync("Tell me a joke about AI.");
-
-        // Stream the result.
-        await foreach (var chunk in result)
+        while (true)
         {
-            Console.Write(chunk);
+            Console.Write($"[{DateTime.Now.ToString("hh:mm:ss")}] YOU> ");
+            var input = Console.ReadLine();
+
+            if (input == "--exit")
+            {
+                break;
+            }
+            if (input != null)
+            {
+                Console.Write($"[{DateTime.Now.ToString("hh:mm:ss")}] AI> ");
+                var result = kernel.InvokePromptStreamingAsync(input);
+
+                // Stream the result.
+                await foreach (var chunk in result)
+                {
+                    Console.Write(chunk);
+                }
+                Console.WriteLine();
+            }
         }
+
+
     }
 }
