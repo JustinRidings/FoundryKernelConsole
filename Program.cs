@@ -1,5 +1,7 @@
 ﻿using Microsoft.AI.Foundry.Local;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using System.ClientModel;
 
@@ -35,12 +37,19 @@ internal class Program
             apiKey: localApiKey
         );
 
+        builder.Plugins.AddFromType<DateTimeUtils>("date_time_utils");
+
         var kernel = builder.Build();
         Console.WriteLine("------------------------------");
         Console.WriteLine("FoundryKernelConsole");
         Console.WriteLine("------------------------------");
         Console.WriteLine();
         Console.WriteLine("You are now chatting with an LLM.\n");
+
+        ChatHistory chatHistory = new();
+        IChatCompletionService chatService = kernel.Services.GetRequiredService<IChatCompletionService>();
+
+        chatHistory.AddSystemMessage("You are an AI assistant chatting via a CLI. Provide brief and concise responses.");
 
         while (true)
         {
@@ -53,8 +62,15 @@ internal class Program
             }
             if (input != null)
             {
+                chatHistory.AddUserMessage(input);
                 Console.Write($"[{DateTime.Now.ToString("hh:mm:ss")}] AI> ");
-                var result = kernel.InvokePromptStreamingAsync(input);
+                
+                OpenAIPromptExecutionSettings settings = new()
+                {
+                    FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(options: new() { AllowConcurrentInvocation = true, AllowParallelCalls = true }),
+                };
+
+                var result = chatService.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings: settings, kernel: kernel);
 
                 // Stream the result.
                 await foreach (var chunk in result)
